@@ -518,6 +518,15 @@ func (v *checker) MemberNode(node *ast.MemberNode) Nature {
 		if m, ok := base.MethodByName(name.Value); ok {
 			return m
 		}
+		if m, ok := reflect.PtrTo(base).MethodByName(name.Value); ok {
+			if kind(base) == reflect.Interface {
+				return m.Type, info{}
+			} else {
+				node.SetMethodIndex(m.Index)
+				node.Name = name.Value
+				return m.Type, info{method: true}
+			}
+		}
 	}
 
 	base = base.Deref()
