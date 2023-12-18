@@ -482,6 +482,15 @@ func (v *checker) MemberNode(node *ast.MemberNode) (reflect.Type, info) {
 				return m.Type, info{method: true}
 			}
 		}
+		if m, ok := reflect.PtrTo(base).MethodByName(name.Value); ok {
+			if kind(base) == reflect.Interface {
+				return m.Type, info{}
+			} else {
+				node.SetMethodIndex(m.Index)
+				node.Name = name.Value
+				return m.Type, info{method: true}
+			}
+		}
 	}
 
 	if kind(base) == reflect.Ptr {

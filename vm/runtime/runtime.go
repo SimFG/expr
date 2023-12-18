@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math"
 	"reflect"
+	"unsafe"
 )
 
 func deref(kind reflect.Kind, value reflect.Value) (reflect.Kind, reflect.Value) {
@@ -102,10 +103,21 @@ func FetchField(from any, field *Field) any {
 		// is a struct as we already did it on compilation step.
 		value := fieldByIndex(v, field)
 		if value.IsValid() {
-			return value.Interface()
+			return GetFieldValue(value)
 		}
 	}
 	panic(fmt.Sprintf("cannot get %v from %T", field.Path[0], from))
+}
+
+func GetFieldValue(value reflect.Value) (result any) {
+	defer func() {
+		if err := recover(); err != nil {
+			h := reflect.NewAt(value.Type(), unsafe.Pointer(value.UnsafeAddr())).Elem()
+			result = h.Interface()
+		}
+	}()
+	result = value.Interface()
+	return
 }
 
 func fieldByIndex(v reflect.Value, field *Field) reflect.Value {
@@ -136,12 +148,26 @@ func FetchMethod(from any, method *Method) any {
 	kind := v.Kind()
 	if kind != reflect.Invalid {
 		// Methods can be defined on any type, no need to dereference.
-		method := v.Method(method.Index)
+		method := GetMethodValue(v, method.Index)
 		if method.IsValid() {
 			return method.Interface()
 		}
 	}
 	panic(fmt.Sprintf("cannot fetch %v from %T", method.Name, from))
+}
+
+func GetMethodValue(value reflect.Value, index int) (result reflect.Value) {
+	defer func() {
+		if err := recover(); err != nil {
+			structType := value.Type()
+			pointerType := reflect.PtrTo(structType)
+			pointerValue := reflect.New(pointerType.Elem())
+			pointerValue.Elem().Set(value)
+			result = pointerValue.Method(index)
+		}
+	}()
+	result = value.Method(index)
+	return
 }
 
 func Deref(i any) any {

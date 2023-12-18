@@ -6,3 +6,6 @@
 *.test
 *.out
 *.html
+
+simfg
+.idea
