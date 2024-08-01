@@ -7,7 +7,6 @@ import (
 	"math"
 	"reflect"
 	"unsafe"
-)
 
 	"github.com/expr-lang/expr/internal/deref"
 )
