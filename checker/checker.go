@@ -61,6 +61,26 @@ func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
 
 		// Run patchers that require multiple passes next (currently only Operator patching)
 		runVisitors(tree, config, true)
+		// // We need to perform types check, because some visitors may rely on
+		// // types information available in the tree.
+		// _, _ = Check(tree, config)
+
+		// // TODO fubang 1000 count?
+		// for i := 0; i < 1000; i++ {
+		// 	more := false
+		// 	for _, v := range config.Visitors {
+		// 		ast.Walk(&tree.Node, v)
+
+		// 		if v, ok := v.(interface {
+		// 			ShouldRepeat() bool
+		// 		}); ok {
+		// 			more = more || v.ShouldRepeat()
+		// 		}
+		// 	}
+		// 	if !more {
+		// 		break
+		// 	}
+		// }
 	}
 	_, err = Check(tree, config)
 	if err != nil {

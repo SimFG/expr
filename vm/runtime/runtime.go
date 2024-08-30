@@ -72,7 +72,7 @@ func Fetch(from, i any) any {
 			return name == fieldName
 		})
 		if value.IsValid() {
-			return value.Interface()
+			return GetFieldValue(value)
 		}
 	}
 	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
@@ -86,7 +86,7 @@ type Field struct {
 func FetchField(from any, field *Field) any {
 	v := reflect.ValueOf(from)
 	if v.Kind() != reflect.Invalid {
-		v = reflect.Indirect(v)
+		v = deref.Value(v)
 
 		// We can use v.FieldByIndex here, but it will panic if the field
 		// is not exists. And we need to recover() to generate a more
@@ -117,9 +117,11 @@ func fieldByIndex(v reflect.Value, field *Field) reflect.Value {
 	if len(field.Index) == 1 {
 		return v.Field(field.Index[0])
 	}
+	fmt.Println("inner print", field.Index)
 	for i, x := range field.Index {
+		println("inner print for:", i, x)
 		if i > 0 {
-			if v.Kind() == reflect.Ptr {
+			if v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 				if v.IsNil() {
 					panic(fmt.Sprintf("cannot get %v from %v", field.Path[i], field.Path[i-1]))
 				}

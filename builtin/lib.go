@@ -363,7 +363,11 @@ func flatten(arg reflect.Value) []any {
 			x := flatten(v)
 			ret = append(ret, x...)
 		} else {
-			ret = append(ret, v.Interface())
+			if v.CanInterface() {
+				ret = append(ret, v.Interface())
+			} else {
+				ret = append(ret, v)
+			}
 		}
 	}
 	return ret
