@@ -22,13 +22,14 @@ func ParseCheck(input string, config *conf.Config) (*parser.Tree, error) {
 	}
 
 	if len(config.Visitors) > 0 {
+		// We need to perform types check, because some visitors may rely on
+		// types information available in the tree.
+		_, _ = Check(tree, config)
+
+		// TODO fubang 1000 count?
 		for i := 0; i < 1000; i++ {
 			more := false
 			for _, v := range config.Visitors {
-				// We need to perform types check, because some visitors may rely on
-				// types information available in the tree.
-				_, _ = Check(tree, config)
-
 				ast.Walk(&tree.Node, v)
 
 				if v, ok := v.(interface {
