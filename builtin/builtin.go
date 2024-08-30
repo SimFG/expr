@@ -1061,4 +1061,14 @@ var Builtins = []*Function{
 		},
 		Types: types(new(func(int) int)),
 	},
+	{
+		Name: "view",
+		Fast: View,
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 1 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 1, got %d)", len(args))
+			}
+			return anyType, nil
+		},
+	},
 }
