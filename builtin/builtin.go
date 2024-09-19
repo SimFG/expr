@@ -733,6 +733,37 @@ var Builtins = []*Function{
 		},
 	},
 	{
+		Name: "mapValue",
+		Func: func(args ...any) (any, error) {
+			if len(args) != 2 {
+				return nil, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
+			}
+			v := reflect.ValueOf(args[0])
+			if v.Kind() != reflect.Map {
+				return nil, fmt.Errorf("cannot get values from %s", v.Kind())
+			}
+			keys := v.MapKeys()
+			for _, key := range keys {
+				if key.Interface() == args[1] {
+					return v.MapIndex(key).Interface(), nil
+				}
+			}
+			return nil, nil
+		},
+		Validate: func(args []reflect.Type) (reflect.Type, error) {
+			if len(args) != 2 {
+				return anyType, fmt.Errorf("invalid number of arguments (expected 2, got %d)", len(args))
+			}
+			switch kind(args[0]) {
+			case reflect.Interface:
+				return arrayType, nil
+			case reflect.Map:
+				return arrayType, nil
+			}
+			return anyType, fmt.Errorf("cannot get values from %s", args[0])
+		},
+	},
+	{
 		Name: "toPairs",
 		Func: func(args ...any) (any, error) {
 			if len(args) != 1 {
