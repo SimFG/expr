@@ -337,7 +337,13 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 				if param == nil {
 					in[i] = reflect.Zero(fn.Type().In(i))
 				} else {
-					in[i] = reflect.ValueOf(param)
+					methodType := fn.Type().In(i)
+					requestType := reflect.TypeOf(param)
+					requestValue := reflect.ValueOf(param)
+					if requestType != methodType {
+						requestValue = requestValue.Convert(requestType)
+					}
+					in[i] = requestValue
 				}
 			}
 			out := fn.Call(in)

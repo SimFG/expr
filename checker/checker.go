@@ -964,7 +964,7 @@ func (v *checker) checkBuiltinGet(node *ast.BuiltinNode) Nature {
 		}
 		return base.Elem()
 	case reflect.Map:
-		if !prop.AssignableTo(base.Key()) && !isUnknown(prop) {
+		if !prop.ConvertibleTo(base.Key()) && !isUnknown(prop) {
 			return v.error(node.Arguments[1], "cannot use %s to get an element from %s", prop, base)
 		}
 		return base.Elem()
@@ -1128,12 +1128,12 @@ func (v *checker) checkArguments(
 		// Check if argument is assignable to the function input type.
 		// We check original type (like *time.Time), not dereferenced type,
 		// as function input type can be pointer to a struct.
-		assignable := argNature.AssignableTo(in)
+		assignable := argNature.ConvertibleTo(in)
 
 		// We also need to check if dereference arg type is assignable to the function input type.
 		// For example, func(int) and argument *int. In this case we will add OpDeref to the argument,
 		// so we can call the function with *int argument.
-		assignable = assignable || argNature.Deref().AssignableTo(in)
+		assignable = assignable || argNature.Deref().ConvertibleTo(in)
 
 		if !assignable && !isUnknown(argNature) {
 			return unknown, &file.Error{

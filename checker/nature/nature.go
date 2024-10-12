@@ -7,9 +7,7 @@ import (
 	"github.com/expr-lang/expr/internal/deref"
 )
 
-var (
-	unknown = Nature{}
-)
+var unknown = Nature{}
 
 type Nature struct {
 	Type            reflect.Type      // Type of the value. If nil, then value is unknown.
@@ -103,6 +101,19 @@ func (n Nature) NumMethods() int {
 		return 0
 	}
 	return n.Type.NumMethod()
+}
+
+func (n Nature) ConvertibleTo(nt Nature) bool {
+	if n.Nil {
+		// Untyped nil is assignable to any interface, but implements only the empty interface.
+		if nt.Type != nil && nt.Type.Kind() == reflect.Interface {
+			return true
+		}
+	}
+	if n.Type == nil || nt.Type == nil {
+		return false
+	}
+	return n.Type.ConvertibleTo(nt.Type)
 }
 
 func (n Nature) MethodByName(name string) (Nature, bool) {
