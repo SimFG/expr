@@ -53,7 +53,13 @@ func Fetch(from, i any) any {
 		if i == nil {
 			value = v.MapIndex(reflect.Zero(v.Type().Key()))
 		} else {
-			value = v.MapIndex(reflect.ValueOf(i))
+			mapKeyType := v.Type().Key()
+			requestKeyType := reflect.TypeOf(i)
+			requestKeyValue := reflect.ValueOf(i)
+			if mapKeyType != requestKeyType {
+				requestKeyValue = requestKeyValue.Convert(mapKeyType)
+			}
+			value = v.MapIndex(requestKeyValue)
 		}
 		if value.IsValid() {
 			return value.Interface()
