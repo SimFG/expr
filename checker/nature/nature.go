@@ -84,6 +84,19 @@ func (n Nature) AssignableTo(nt Nature) bool {
 	return n.Type.AssignableTo(nt.Type)
 }
 
+func (n Nature) ConvertibleTo(nt Nature) bool {
+	if n.Nil {
+		// Untyped nil is assignable to any interface, but implements only the empty interface.
+		if nt.Type != nil && nt.Type.Kind() == reflect.Interface {
+			return true
+		}
+	}
+	if n.Type == nil || nt.Type == nil {
+		return false
+	}
+	return n.Type.ConvertibleTo(nt.Type)
+}
+
 func (n Nature) MethodByName(name string) (Nature, bool) {
 	if n.Type == nil {
 		return unknown, false
