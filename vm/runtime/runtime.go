@@ -14,7 +14,7 @@ import (
 func Fetch(from, i any) any {
 	v := reflect.ValueOf(from)
 	if v.Kind() == reflect.Invalid {
-		panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+		panic(fmt.Sprintf("Fetch: Start cannot fetch %v from %T", i, from))
 	}
 
 	// Methods can be defined on any type.
@@ -81,7 +81,17 @@ func Fetch(from, i any) any {
 			return GetFieldValue(value)
 		}
 	}
-	panic(fmt.Sprintf("cannot fetch %v from %T", i, from))
+
+	if v.Kind() == reflect.Struct {
+		vv := reflect.New(v.Type())
+		vv.Elem().Set(v)
+		methodName := i.(string)
+		method := vv.MethodByName(methodName)
+		if method.IsValid() {
+			return method.Interface()
+		}
+	}
+	panic(fmt.Sprintf("Fetch End: cannot fetch %v from %T, kind: %v", i, from, v.Kind()))
 }
 
 type Field struct {
@@ -123,9 +133,7 @@ func fieldByIndex(v reflect.Value, field *Field) reflect.Value {
 	if len(field.Index) == 1 {
 		return v.Field(field.Index[0])
 	}
-	fmt.Println("inner print", field.Index)
 	for i, x := range field.Index {
-		println("inner print for:", i, x)
 		if i > 0 {
 			if v.Kind() == reflect.Ptr || v.Kind() == reflect.Interface {
 				if v.IsNil() {
@@ -154,7 +162,7 @@ func FetchMethod(from any, method *Method) any {
 			return method.Interface()
 		}
 	}
-	panic(fmt.Sprintf("cannot fetch %v from %T", method.Name, from))
+	panic(fmt.Sprintf("FetchMethod: cannot fetch %v from %T", method.Name, from))
 }
 
 func GetMethodValue(value reflect.Value, index int) (result reflect.Value) {
