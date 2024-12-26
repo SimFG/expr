@@ -341,7 +341,7 @@ func (vm *VM) Run(program *Program, env any) (_ any, err error) {
 					requestType := reflect.TypeOf(param)
 					requestValue := reflect.ValueOf(param)
 					if requestType != methodType {
-						requestValue = requestValue.Convert(requestType)
+						requestValue = requestValue.Convert(methodType)
 					}
 					in[i] = requestValue
 				}
